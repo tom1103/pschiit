@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
+import CarteLocalisation from './CarteLocalisation.vue'
 
 // --- Geolocation and Date ---
 const latitude = ref(48.8566)
@@ -68,26 +69,29 @@ const sunEvents = computed(() => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="flex flex-col">
           <label for="latitude" class="text-sm font-medium text-gray-600 mb-1">Latitude</label>
-          <input type="number" id="latitude" v-model.number="latitude" class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+          <input type="number" id="latitude" v-model.number="latitude"
+            class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="flex flex-col">
           <label for="longitude" class="text-sm font-medium text-gray-600 mb-1">Longitude</label>
-          <input type="number" id="longitude" v-model.number="longitude" class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+          <input type="number" id="longitude" v-model.number="longitude"
+            class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="flex items-end">
-          <button @click="geoLoc" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+          <button @click="geoLoc"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
             Utiliser ma position
           </button>
         </div>
       </div>
-
       <!-- Sun Events -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Day Events -->
         <div>
           <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b-2 border-yellow-400 pb-2">Jour</h2>
           <ul class="space-y-3">
-            <li v-for="event in sunEvents.day" :key="event.name" class="flex items-center p-2 rounded-md hover:bg-gray-50">
+            <li v-for="event in sunEvents.day" :key="event.name"
+              class="flex items-center p-2 rounded-md hover:bg-gray-50">
               <SunIcon :name="event.icon" class="w-6 h-6 mr-3 text-yellow-500" />
               <span class="flex-1 text-gray-700">{{ event.name }}</span>
               <span class="font-semibold text-gray-800">{{ formatTime(event.time) }}</span>
@@ -99,8 +103,9 @@ const sunEvents = computed(() => {
         <div>
           <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b-2 border-indigo-400 pb-2">Nuit</h2>
           <ul class="space-y-3">
-            <li v-for="event in sunEvents.night" :key="event.name" class="flex items-center p-2 rounded-md hover:bg-gray-50">
-               <SunIcon :name="event.icon" class="w-6 h-6 mr-3 text-indigo-500" />
+            <li v-for="event in sunEvents.night" :key="event.name"
+              class="flex items-center p-2 rounded-md hover:bg-gray-50">
+              <SunIcon :name="event.icon" class="w-6 h-6 mr-3 text-indigo-500" />
               <span class="flex-1 text-gray-700">{{ event.name }}</span>
               <span class="font-semibold text-gray-800">{{ formatTime(event.time) }}</span>
             </li>
@@ -108,7 +113,9 @@ const sunEvents = computed(() => {
         </div>
       </div>
     </div>
+
   </div>
+  <CarteLocalisation :latitude="latitude" :longitude="longitude" />
 </template>
 
 <style scoped>
