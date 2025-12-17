@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
@@ -7,7 +7,32 @@ import CarteLocalisation from './CarteLocalisation.vue'
 // --- Geolocation and Date ---
 const latitude = ref(48.8566)
 const longitude = ref(2.3522)
-const date = ref(new Date())
+const date = ref(new Date().toISOString().slice(0, 10))
+const suivreLocalisation = ref(false)
+const sunCalcDate = computed(() => new Date(date.value))
+
+let intervalId = null
+
+// Watch for manual changes to latitude or longitude
+watch([latitude, longitude], () => {
+  suivreLocalisation.value = false
+})
+
+watch(suivreLocalisation, (newValue) => {
+  if (newValue) {
+    geoLoc() // Initial fetch
+    intervalId = setInterval(geoLoc, 60000) // Update every minute
+  } else if (intervalId) {
+    clearInterval(intervalId)
+    intervalId = null
+  }
+})
+
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId)
+  }
+})
 
 function geoLoc() {
   if (navigator.geolocation) {
@@ -22,7 +47,7 @@ function geoLoc() {
 
 // --- SunCalc Times Calculation ---
 const times = computed(() => {
-  return SunCalc.getTimes(date.value, latitude.value, longitude.value)
+  return SunCalc.getTimes(sunCalcDate.value, latitude.value, longitude.value)
 })
 
 // --- Helper to format time ---
@@ -83,6 +108,15 @@ const sunEvents = computed(() => {
             Utiliser ma position
           </button>
         </div>
+        <div class="flex flex-col">
+          <label for="date" class="text-sm font-medium text-gray-600 mb-1">Date</label>
+          <input type="date" id="date" v-model="date"
+            class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="suivre" v-model="suivreLocalisation" class="mr-2">
+          <label for="suivre" class="text-sm font-medium text-gray-600">Suivre ma localisation</label>
+        </div>
       </div>
       <!-- Sun Events -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -115,7 +149,7 @@ const sunEvents = computed(() => {
     </div>
 
   </div>
-  <CarteLocalisation :latitude="latitude" :longitude="longitude" />
+  <CarteLocalisation :latitude="latitude" :longitude="longitude" :suivre-localisation="suivreLocalisation" />
 </template>
 
 <style scoped>
