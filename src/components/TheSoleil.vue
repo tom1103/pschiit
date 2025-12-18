@@ -10,13 +10,9 @@ const longitude = ref(2.3522)
 const date = ref(new Date().toISOString().slice(0, 10))
 const suivreLocalisation = ref(false)
 const sunCalcDate = computed(() => new Date(date.value))
+const showManualControls = ref(false)
 
 let intervalId = null
-
-// Watch for manual changes to latitude or longitude
-watch([latitude, longitude], () => {
-  suivreLocalisation.value = false
-})
 
 watch(suivreLocalisation, (newValue) => {
   if (newValue) {
@@ -91,27 +87,37 @@ const sunEvents = computed(() => {
       <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Éphémérides du Soleil</h1>
 
       <!-- Controls -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="flex justify-end mb-4">
+        <button @click="showManualControls = !showManualControls" class="p-2 rounded-full hover:bg-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="!showManualControls" d="M12 4v16m8-8H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="showManualControls" d="M20 12H4" />
+          </svg>
+        </button>
+      </div>
+      <div v-if="showManualControls" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="flex flex-col">
           <label for="latitude" class="text-sm font-medium text-gray-600 mb-1">Latitude</label>
-          <input type="number" id="latitude" v-model.number="latitude"
+          <input type="number" id="latitude" v-model.number="latitude" @input="suivreLocalisation = false"
             class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="flex flex-col">
           <label for="longitude" class="text-sm font-medium text-gray-600 mb-1">Longitude</label>
-          <input type="number" id="longitude" v-model.number="longitude"
+          <input type="number" id="longitude" v-model.number="longitude" @input="suivreLocalisation = false"
             class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div class="flex items-end">
-          <button @click="geoLoc"
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
-            Utiliser ma position
-          </button>
         </div>
         <div class="flex flex-col">
           <label for="date" class="text-sm font-medium text-gray-600 mb-1">Date</label>
           <input type="date" id="date" v-model="date"
             class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="flex items-end">
+          <button @click="geoLoc"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+            Utiliser ma position
+          </button>
         </div>
         <div class="flex items-center">
           <input type="checkbox" id="suivre" v-model="suivreLocalisation" class="mr-2">

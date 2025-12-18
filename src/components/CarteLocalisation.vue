@@ -92,8 +92,8 @@ watch(() => props.mapStyle, (newStyle) => {
   <div ref="mapContainer" class="map-container"></div>
 </template>
 
-<style>
-.blinking .mapboxgl-marker-anchor-center {
+<style scoped>
+:deep(.blinking .mapboxgl-marker-anchor-center) {
   animation: blink 1s infinite;
 }
 
