@@ -12,6 +12,10 @@ const props = defineProps({
     type: Number,
     required: true
   },
+  suivreLocalisation: {
+    type: Boolean,
+    default: false
+  },
   zoom: {
     type: Number,
     default: 9
@@ -38,6 +42,15 @@ onMounted(() => {
   marker = new mapboxgl.Marker()
     .setLngLat([props.longitude, props.latitude])
     .addTo(map);
+
+  watch(() => props.suivreLocalisation, (newValue) => {
+    const markerElement = marker.getElement();
+    if (newValue) {
+      markerElement.classList.add('blinking');
+    } else {
+      markerElement.classList.remove('blinking');
+    }
+  }, { immediate: true });
 });
 
 onUnmounted(() => {
@@ -80,6 +93,16 @@ watch(() => props.mapStyle, (newStyle) => {
 </template>
 
 <style scoped>
+:deep(.blinking .mapboxgl-marker-anchor-center) {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .map-container {
   width: 100%;
   height: 500px;
