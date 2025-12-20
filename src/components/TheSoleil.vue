@@ -3,6 +3,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
+import SunMoonGraph from './SunMoonGraph.vue'
 
 // --- Geolocation and Date ---
 const latitude = ref(48.8566)
@@ -84,17 +85,22 @@ const sunEvents = computed(() => {
 <template>
   <div class="max-w-4xl mx-auto p-4 font-sans">
     <div class="bg-white shadow-md rounded-lg p-6">
-      <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Éphémérides du Soleil</h1>
+      <div class="flex items-start justify-between mb-6">
+        <SunMoonGraph :latitude="latitude" :longitude="longitude" :date="sunCalcDate" />
+        <div class="flex-grow text-center">
+          <h1 class="text-2xl font-bold text-gray-800">Éphémérides du Soleil</h1>
+        </div>
+        <div class="flex-shrink-0">
+          <button @click="showManualControls = !showManualControls" class="p-2 rounded-full hover:bg-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="!showManualControls" d="M12 4v16m8-8H4" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="showManualControls" d="M20 12H4" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <!-- Controls -->
-      <div class="flex justify-end mb-4">
-        <button @click="showManualControls = !showManualControls" class="p-2 rounded-full hover:bg-gray-200">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="!showManualControls" d="M12 4v16m8-8H4" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" v-if="showManualControls" d="M20 12H4" />
-          </svg>
-        </button>
-      </div>
       <div v-if="showManualControls" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="flex flex-col">
           <label for="latitude" class="text-sm font-medium text-gray-600 mb-1">Latitude</label>
