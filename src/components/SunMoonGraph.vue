@@ -14,7 +14,6 @@ import {
 } from 'chart.js'
 import annotationPlugin from 'chartjs-plugin-annotation'
 import SunCalc from 'suncalc'
-import SunIcon from './SunIcon.vue'
 import ModalComponent from './ModalComponent.vue'
 
 ChartJS.register(
@@ -93,9 +92,15 @@ const timeToLabelIndex = (time) => {
   return Math.round(minutes / (24 * 60 / SAMPLES))
 }
 
-const sunriseIndex = ref(0)
-const sunsetIndex = ref(0)
 const currentIndex = ref(0)
+
+const formatTime = (date) => {
+  if (!date) return ''
+  return date.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 function updateChart() {
   const labels = []
@@ -121,8 +126,6 @@ function updateChart() {
 
   const times = SunCalc.getTimes(props.date, props.latitude, props.longitude)
 
-  sunriseIndex.value = timeToLabelIndex(times.sunrise)
-  sunsetIndex.value = timeToLabelIndex(times.sunset)
   const now = new Date();
   if (now.toDateString() === props.date.toDateString()) {
     currentIndex.value = timeToLabelIndex(now);
@@ -130,20 +133,32 @@ function updateChart() {
     currentIndex.value = -1; // Hide if not today
   }
 
+  const baseAnnotations = {
+    blueHourMorning: createBoxAnnotation(times.nauticalDawn, times.sunrise, 'rgba(30, 144, 255, 0.2)'),
+    goldenHourMorning: createBoxAnnotation(times.sunrise, times.goldenHourEnd, 'rgba(255, 215, 0, 0.2)'),
+    goldenHourEvening: createBoxAnnotation(times.goldenHour, times.sunset, 'rgba(255, 215, 0, 0.2)'),
+    blueHourEvening: createBoxAnnotation(times.sunset, times.nauticalDusk, 'rgba(30, 144, 255, 0.2)')
+  };
 
-  const annotations = {
-    blueHourMorning: createAnnotation(times.nauticalDawn, times.sunrise, 'rgba(30, 144, 255, 0.2)'),
-    goldenHourMorning: createAnnotation(times.sunrise, times.goldenHourEnd, 'rgba(255, 215, 0, 0.2)'),
-    goldenHourEvening: createAnnotation(times.goldenHour, times.sunset, 'rgba(255, 215, 0, 0.2)'),
-    blueHourEvening: createAnnotation(times.sunset, times.nauticalDusk, 'rgba(30, 144, 255, 0.2)')
-  }
+  const smallAnnotations = {
+      ...baseAnnotations,
+      sunriseLine: createLineAnnotation(times.sunrise, 'sunrise', 1),
+      sunsetLine: createLineAnnotation(times.sunset, 'sunset', 1),
+  };
+
+  const largeAnnotations = {
+      ...baseAnnotations,
+      sunriseLine: createLineAnnotation(times.sunrise, 'sunrise', 2),
+      sunriseLabel: createLabelAnnotation(times.sunrise, formatTime(times.sunrise), 'sunrise'),
+      sunsetLine: createLineAnnotation(times.sunset, 'sunset', 2),
+      sunsetLabel: createLabelAnnotation(times.sunset, formatTime(times.sunset), 'sunset'),
+  };
 
   const baseChartOptions = {
     responsive: true,
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false },
-      annotation: { annotations }
+      tooltip: { enabled: false }
     },
     elements: { point: { radius: 0 } }
   }
@@ -154,6 +169,10 @@ function updateChart() {
     scales: {
       x: { grid: { display: false }, ticks: { display: false } },
       y: { grid: { display: false }, ticks: { display: false }, min: -0.8, max: 1 }
+    },
+    plugins: {
+      ...baseChartOptions.plugins,
+      annotation: { annotations: smallAnnotations }
     }
   }
 
@@ -180,12 +199,13 @@ function updateChart() {
     plugins: {
       ...baseChartOptions.plugins,
       tooltip: { enabled: true },
-      legend: { display: true }
+      legend: { display: true },
+      annotation: { annotations: largeAnnotations }
     }
   }
 }
 
-function createAnnotation(start, end, color) {
+function createBoxAnnotation(start, end, color) {
   const startIndex = timeToLabelIndex(start);
   const endIndex = timeToLabelIndex(end);
   if (startIndex === -1 || endIndex === -1 || !chartData.value.labels[Math.min(startIndex, endIndex)] || !chartData.value.labels[Math.max(startIndex, endIndex)]) return {};
@@ -198,6 +218,37 @@ function createAnnotation(start, end, color) {
   }
 }
 
+function createLineAnnotation(time, type, width) {
+    const index = timeToLabelIndex(time);
+    if (index === -1) return {};
+    return {
+        type: 'line',
+        scaleID: 'x',
+        value: chartData.value.labels[index],
+        borderColor: type === 'sunrise' ? 'rgba(255, 165, 0, 0.8)' : 'rgba(255, 69, 0, 0.8)',
+        borderWidth: width,
+        borderDash: [5, 5],
+    };
+}
+
+function createLabelAnnotation(time, content, type) {
+    const index = timeToLabelIndex(time);
+    if (index === -1) return {};
+    return {
+        type: 'label',
+        xValue: chartData.value.labels[index],
+        yValue: 0.95,
+        content: content,
+        font: { size: 12, weight: 'bold' },
+        color: '#333',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        padding: 4,
+        borderRadius: 4,
+        xAdjust: type === 'sunrise' ? 20 : -20,
+    };
+}
+
+
 const getIconPosition = (index, yData) => {
     if (index < 0 || index >= SAMPLES || !yData || yData.length === 0 || !smallChartOptions.value.scales) return { display: 'none' };
     const yValue = yData[index];
@@ -208,8 +259,6 @@ const getIconPosition = (index, yData) => {
     return { top, left, transform: 'translate(-50%, -50%)' };
 };
 
-const sunrisePosition = computed(() => getIconPosition(sunriseIndex.value, chartData.value.datasets[0].data));
-const sunsetPosition = computed(() => getIconPosition(sunsetIndex.value, chartData.value.datasets[0].data));
 const currentPosition = computed(() => getIconPosition(currentIndex.value, chartData.value.datasets[0].data));
 
 
@@ -225,12 +274,6 @@ onMounted(() => {
   <div>
     <div class="graph-container" @click="showModal = true">
       <Line :data="chartData" :options="smallChartOptions" />
-      <div class="icon-overlay" :style="sunrisePosition" title="Sunrise">
-          <SunIcon name="sunrise" />
-      </div>
-      <div class="icon-overlay" :style="sunsetPosition" title="Sunset">
-          <SunIcon name="sunset" />
-      </div>
       <div v-if="currentIndex !== -1" class="icon-overlay" :style="currentPosition" title="Current Time">
           <div class="w-2 h-2 bg-red-500 rounded-full"></div>
       </div>
@@ -239,7 +282,7 @@ onMounted(() => {
     <teleport to="body">
         <ModalComponent v-if="showModal" @close="handleModalClose" @open="handleModalOpen">
             <div class="large-graph-container">
-                <Line v-if="isModalReady" :data="chartData" :options="largeChartOptions" />
+                <Line :data="chartData" :options="largeChartOptions" />
             </div>
         </ModalComponent>
     </teleport>
