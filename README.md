@@ -1,35 +1,41 @@
 # pschiit
 
-This template should help get you started developing with Vue 3 in Vite.
+Une application Vue.js simple pour afficher les éphémérides du soleil et de la lune en fonction de la localisation et de la date.
 
-## Recommended IDE Setup
+## Architecture du projet
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Le projet est structuré autour de plusieurs composants Vue single-file :
 
-## Customize configuration
+-   `App.vue`: Le composant racine qui intègre `TheSoleil`.
+-   `TheSoleil.vue`: Le composant principal qui gère la logique de l'application.
+-   `SunMoonGraph.vue`: Affiche un graphique (simplifié pour les tests).
+-   `CarteLocalisation.vue`: Affiche une carte Mapbox.
+-   `ModalComponent.vue`: Un composant de modale réutilisable.
+-   `SunIcon.vue`: Un composant pour afficher différentes icônes SVG.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## Installation et Développement
 
-## Project Setup
+### Prérequis
+
+-   Node.js (version spécifiée dans `package.json`)
+-   npm
+
+### Installation
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Développement
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+### Tests
+
+Pour lancer la suite de tests unitaires, exécutez :
 
 ```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
+npm run test
 ```

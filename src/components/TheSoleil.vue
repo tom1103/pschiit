@@ -5,32 +5,75 @@ import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
 
-// --- Geolocation and Date ---
+// --- Géolocalisation et Date ---
+
+/**
+ * @type {import('vue').Ref<number>}
+ * @description Référence pour la latitude de l'utilisateur.
+ */
 const latitude = ref(48.8566)
+
+/**
+ * @type {import('vue').Ref<number>}
+ * @description Référence pour la longitude de l'utilisateur.
+ */
 const longitude = ref(2.3522)
+
+/**
+ * @type {import('vue').Ref<string>}
+ * @description Référence pour la date sélectionnée, au format YYYY-MM-DD.
+ */
 const date = ref(new Date().toISOString().slice(0, 10))
+
+/**
+ * @type {import('vue').Ref<boolean>}
+ * @description Indicateur pour savoir si la géolocalisation en temps réel est activée.
+ */
 const suivreLocalisation = ref(false)
+
+/**
+ * @type {import('vue').ComputedRef<Date>}
+ * @description Propriété calculée qui convertit la date de la chaîne de caractères en objet Date pour SunCalc.
+ */
 const sunCalcDate = computed(() => new Date(date.value))
+
+/**
+ * @type {import('vue').Ref<boolean>}
+ * @description Indicateur pour afficher ou masquer les contrôles de saisie manuelle.
+ */
 const showManualControls = ref(false)
 
+/**
+ * @type {number|null}
+ * @description ID de l'intervalle pour la mise à jour de la géolocalisation.
+ */
 let intervalId = null
 
+/**
+ * @description Surveille les changements de la variable `suivreLocalisation` pour démarrer ou arrêter le suivi de la géolocalisation.
+ */
 watch(suivreLocalisation, (newValue) => {
   if (newValue) {
-    geoLoc() // Initial fetch
-    intervalId = setInterval(geoLoc, 60000) // Update every minute
+    geoLoc() // Appel initial
+    intervalId = setInterval(geoLoc, 60000) // Met à jour toutes les minutes
   } else if (intervalId) {
     clearInterval(intervalId)
     intervalId = null
   }
 })
 
+/**
+ * @description Nettoie l'intervalle de géolocalisation lorsque le composant est démonté.
+ */
 onUnmounted(() => {
   if (intervalId) {
     clearInterval(intervalId)
   }
 })
 
+/**
+ * @description Récupère la position géographique actuelle de l'utilisateur.
+ */
 function geoLoc() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -42,12 +85,21 @@ function geoLoc() {
   }
 }
 
-// --- SunCalc Times Calculation ---
+// --- Calcul des heures du soleil ---
+
+/**
+ * @type {import('vue').ComputedRef<SunCalc.GetTimesResult>}
+ * @description Propriété calculée qui retourne les heures des événements solaires pour la date et la position données.
+ */
 const times = computed(() => {
   return SunCalc.getTimes(sunCalcDate.value, latitude.value, longitude.value)
 })
 
-// --- Helper to format time ---
+/**
+ * @description Formate un objet Date en une chaîne de caractères de temps lisible (HH:MM).
+ * @param {Date} date - L'objet Date à formater.
+ * @returns {string} L'heure formatée.
+ */
 const formatTime = (date) => {
   return date.toLocaleTimeString('fr-FR', {
     hour: '2-digit',
@@ -55,7 +107,10 @@ const formatTime = (date) => {
   })
 }
 
-// --- Structured Sun Events ---
+/**
+ * @type {import('vue').ComputedRef<{day: Array<object>, night: Array<object>}>}
+ * @description Propriété calculée qui structure les événements solaires en deux listes : jour et nuit.
+ */
 const sunEvents = computed(() => {
   const t = times.value
   return {

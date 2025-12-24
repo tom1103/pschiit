@@ -1,12 +1,23 @@
 <script setup>
 import { onMounted } from 'vue'
 
+/**
+ * @description Événements émis par le composant.
+ * @emits close - Émis lorsque la modale demande à être fermée (clic sur le fond ou le bouton).
+ * @emits open - Émis lorsque le composant est monté et prêt à être affiché.
+ */
 const emit = defineEmits(['close', 'open'])
 
+/**
+ * @description Fonction pour émettre l'événement de fermeture.
+ */
 const close = () => {
   emit('close')
 }
 
+/**
+ * @description Émet l'événement 'open' une fois que le composant est monté.
+ */
 onMounted(() => {
     emit('open')
 })
