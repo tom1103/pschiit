@@ -1,13 +1,25 @@
 <script setup>
 import { computed } from 'vue'
 
+/**
+ * @description Props du composant SunIcon.
+ */
 const props = defineProps({
+  /**
+   * Le nom de l'icône à afficher.
+   * Doit correspondre à une clé dans l'objet 'icons'.
+   * @type {('sunrise'|'sunset'|'day'|'night')}
+   */
   name: {
     type: String,
     required: true,
   },
 })
 
+/**
+ * @description Dictionnaire contenant les SVG des différentes icônes.
+ * @type {Object<string, string>}
+ */
 const icons = {
   sunrise: `
     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sunrise" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -40,6 +52,10 @@ const icons = {
   `,
 };
 
+/**
+ * @description Propriété calculée qui retourne le SVG de l'icône demandée via la prop 'name'.
+ * @type {import('vue').ComputedRef<string>}
+ */
 const iconSvg = computed(() => icons[props.name] || '');
 </script>
 
