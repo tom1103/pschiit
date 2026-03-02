@@ -50,13 +50,13 @@ const icons = {
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
     </svg>
   `,
-};
+}
 
 /**
  * @description Propriété calculée qui retourne le SVG de l'icône demandée via la prop 'name'.
  * @type {import('vue').ComputedRef<string>}
  */
-const iconSvg = computed(() => icons[props.name] || '');
+const iconSvg = computed(() => icons[props.name] || '')
 </script>
 
 <template>
