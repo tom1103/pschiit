@@ -19,7 +19,7 @@ const close = () => {
  * @description Émet l'événement 'open' une fois que le composant est monté.
  */
 onMounted(() => {
-    emit('open')
+  emit('open')
 })
 </script>
 
