@@ -4,6 +4,7 @@ import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
+import { formatTime } from '@/utils/dateUtils'
 
 // --- Géolocalisation et Date ---
 
@@ -94,18 +95,6 @@ function geoLoc() {
 const times = computed(() => {
   return SunCalc.getTimes(sunCalcDate.value, latitude.value, longitude.value)
 })
-
-/**
- * @description Formate un objet Date en une chaîne de caractères de temps lisible (HH:MM).
- * @param {Date} date - L'objet Date à formater.
- * @returns {string} L'heure formatée.
- */
-const formatTime = (date) => {
-  return date.toLocaleTimeString('fr-FR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * @type {import('vue').ComputedRef<{day: Array<object>, night: Array<object>}>}
