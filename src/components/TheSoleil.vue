@@ -4,7 +4,7 @@ import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
-import { formatTime } from '../utils/formatters'
+import { formatTime } from '@/utils/dateUtils'
 
 // --- Géolocalisation et Date ---
 

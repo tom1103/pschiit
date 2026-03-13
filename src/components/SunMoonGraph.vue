@@ -15,7 +15,7 @@ import {
 import annotationPlugin from 'chartjs-plugin-annotation'
 import SunCalc from 'suncalc'
 import ModalComponent from './ModalComponent.vue'
-import { formatTime } from '../utils/formatters'
+import { formatTime } from '@/utils/dateUtils'
 
 // Enregistrement des composants et plugins Chart.js
 ChartJS.register(
