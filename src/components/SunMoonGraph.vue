@@ -15,6 +15,7 @@ import {
 import annotationPlugin from 'chartjs-plugin-annotation'
 import SunCalc from 'suncalc'
 import ModalComponent from './ModalComponent.vue'
+import { formatTime } from '../utils/formatters'
 
 // Enregistrement des composants et plugins Chart.js
 ChartJS.register(
@@ -152,19 +153,6 @@ const timeToLabelIndex = (time) => {
  * @description Index actuel sur le graphique, correspondant à l'heure courante.
  */
 const currentIndex = ref(0)
-
-/**
- * @description Formate un objet Date en chaîne de caractères HH:MM.
- * @param {Date} date - L'objet Date à formater.
- * @returns {string} L'heure formatée.
- */
-const formatTime = (date) => {
-  if (!date) return ''
-  return date.toLocaleTimeString('fr-FR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * @description Met à jour les données et les options du graphique en fonction des props.
