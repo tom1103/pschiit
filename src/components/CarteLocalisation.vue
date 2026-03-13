@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { getMapboxAccessToken, hasMapboxAccessToken } from '@/services/mapboxConfig'
 
 /**
  * @description Props du composant pour la carte de localisation.
@@ -57,6 +58,11 @@ const mapContainer = ref(null)
 let map = null
 
 /**
+ * @description Indicateur de validité du jeton Mapbox.
+ */
+const isTokenValid = ref(hasMapboxAccessToken())
+
+/**
  * @type {mapboxgl.Marker|null}
  * @description Instance du marqueur sur la carte.
  */
@@ -66,7 +72,12 @@ let marker = null
  * @description Initialise la carte Mapbox et le marqueur lorsque le composant est monté.
  */
 onMounted(() => {
-  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
+  if (!isTokenValid.value) {
+    console.error('Mapbox access token is missing.')
+    return
+  }
+
+  mapboxgl.accessToken = getMapboxAccessToken()
   map = new mapboxgl.Map({
     container: mapContainer.value,
     style: props.mapStyle,
@@ -147,7 +158,13 @@ watch(
 </script>
 
 <template>
-  <div ref="mapContainer" class="map-container"></div>
+  <div v-if="isTokenValid" ref="mapContainer" class="map-container"></div>
+  <div v-else class="map-error-container">
+    <p class="text-red-500 font-semibold">Configuration de la carte manquante</p>
+    <p class="text-sm text-gray-600">
+      Veuillez configurer votre jeton d'accès Mapbox pour afficher la carte.
+    </p>
+  </div>
 </template>
 
 <style scoped>
@@ -161,8 +178,19 @@ watch(
   }
 }
 
-.map-container {
+.map-container,
+.map-error-container {
   width: 100%;
   height: 500px;
+}
+
+.map-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
 }
 </style>
