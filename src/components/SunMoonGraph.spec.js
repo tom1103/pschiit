@@ -7,15 +7,15 @@ import ModalComponent from './ModalComponent.vue'
 vi.mock('vue-chartjs', () => ({
   Line: {
     props: ['data', 'options'],
-    template: '<div class="mocked-chart"></div>'
-  }
+    template: '<div class="mocked-chart"></div>',
+  },
 }))
 
 describe('SunMoonGraph.vue', () => {
   const defaultProps = {
     latitude: 48.8566,
     longitude: 2.3522,
-    date: new Date('2024-01-01T12:00:00Z')
+    date: new Date('2024-01-01T12:00:00Z'),
   }
 
   it('se rend sans erreur', () => {

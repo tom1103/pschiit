@@ -39,3 +39,7 @@ Pour lancer la suite de tests unitaires, exécutez :
 ```sh
 npm run test
 ```
+
+## Sécurité
+
+La sécurité du jeton d'accès Mapbox est cruciale. Veuillez consulter le fichier [SECURITY.md](SECURITY.md) pour les instructions sur la protection de vos identifiants.

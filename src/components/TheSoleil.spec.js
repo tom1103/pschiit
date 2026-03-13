@@ -8,14 +8,14 @@ const mockGeolocation = {
     success({
       coords: {
         latitude: 51.5074,
-        longitude: -0.1278
-      }
-    })
-  )
+        longitude: -0.1278,
+      },
+    }),
+  ),
 }
 Object.defineProperty(global.navigator, 'geolocation', {
   value: mockGeolocation,
-  configurable: true
+  configurable: true,
 })
 
 describe('TheSoleil.vue', () => {
@@ -27,9 +27,9 @@ describe('TheSoleil.vue', () => {
       global: {
         stubs: {
           SunMoonGraph: true, // Empêche le rendu du composant enfant
-          CarteLocalisation: true // Empêche le rendu du composant enfant
-        }
-      }
+          CarteLocalisation: true, // Empêche le rendu du composant enfant
+        },
+      },
     })
   })
 
