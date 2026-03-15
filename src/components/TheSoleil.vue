@@ -45,6 +45,12 @@ const sunCalcDate = computed(() => new Date(date.value))
 const showManualControls = ref(false)
 
 /**
+ * @type {import('vue').Ref<string>}
+ * @description Message d'erreur pour la géolocalisation.
+ */
+const locationError = ref('')
+
+/**
  * @type {number|null}
  * @description ID du watchPosition pour le suivi de la géolocalisation.
  */
@@ -56,6 +62,7 @@ let watchId = null
 watch(suivreLocalisation, (newValue) => {
   if (newValue) {
     if (navigator.geolocation) {
+      locationError.value = ''
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           latitude.value = position.coords.latitude
@@ -88,13 +95,34 @@ onUnmounted(() => {
  * @description Récupère la position géographique actuelle de l'utilisateur.
  */
 function geoLoc() {
+  locationError.value = ''
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((position) => {
-      latitude.value = position.coords.latitude
-      longitude.value = position.coords.longitude
-    })
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        latitude.value = position.coords.latitude
+        longitude.value = position.coords.longitude
+        locationError.value = ''
+      },
+      (error) => {
+        suivreLocalisation.value = false
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            locationError.value = "L'accès à la position a été refusé."
+            break
+          case error.POSITION_UNAVAILABLE:
+            locationError.value = 'Les informations de position sont indisponibles.'
+            break
+          case error.TIMEOUT:
+            locationError.value = 'La demande de position a expiré.'
+            break
+          default:
+            locationError.value = 'Une erreur inconnue est survenue.'
+            break
+        }
+      },
+    )
   } else {
-    alert("La géolocalisation n'est pas supportée par ce navigateur.")
+    locationError.value = "La géolocalisation n'est pas supportée par ce navigateur."
   }
 }
 
@@ -222,6 +250,32 @@ const sunEvents = computed(() => {
           <label for="suivre" class="text-sm font-medium text-gray-600"
             >Suivre ma localisation</label
           >
+        </div>
+        <div
+          v-if="locationError"
+          class="flex items-center text-red-500 text-sm mt-2 md:mt-0 col-span-1 md:col-span-3"
+        >
+          <span class="mr-2">{{ locationError }}</span>
+          <button
+            @click="locationError = ''"
+            class="hover:text-red-700 focus:outline-none"
+            aria-label="Fermer l'erreur"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
       </div>
       <!-- Sun Events -->
