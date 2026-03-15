@@ -52,30 +52,42 @@ const locationError = ref('')
 
 /**
  * @type {number|null}
- * @description ID de l'intervalle pour la mise à jour de la géolocalisation.
+ * @description ID du watchPosition pour le suivi de la géolocalisation.
  */
-let intervalId = null
+let watchId = null
 
 /**
  * @description Surveille les changements de la variable `suivreLocalisation` pour démarrer ou arrêter le suivi de la géolocalisation.
  */
 watch(suivreLocalisation, (newValue) => {
   if (newValue) {
-    locationError.value = '' // Clear error when starting to follow
-    geoLoc() // Appel initial
-    intervalId = setInterval(geoLoc, 60000) // Met à jour toutes les minutes
-  } else if (intervalId) {
-    clearInterval(intervalId)
-    intervalId = null
+    if (navigator.geolocation) {
+      locationError.value = ''
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          latitude.value = position.coords.latitude
+          longitude.value = position.coords.longitude
+        },
+        (error) => {
+          console.error('Erreur de géolocalisation:', error)
+        },
+      )
+    } else {
+      alert("La géolocalisation n'est pas supportée par ce navigateur.")
+      suivreLocalisation.value = false
+    }
+  } else if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId)
+    watchId = null
   }
 })
 
 /**
- * @description Nettoie l'intervalle de géolocalisation lorsque le composant est démonté.
+ * @description Nettoie le watchPosition de géolocalisation lorsque le composant est démonté.
  */
 onUnmounted(() => {
-  if (intervalId) {
-    clearInterval(intervalId)
+  if (watchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(watchId)
   }
 })
 
