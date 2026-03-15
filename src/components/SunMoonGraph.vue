@@ -141,9 +141,14 @@ const SAMPLES = 24 * 6
  * @returns {number} L'index correspondant.
  */
 const timeToLabelIndex = (time) => {
-  if (!time) return -1
+  if (!time || isNaN(time.getTime())) return -1
+
   const startOfDay = new Date(props.date)
   startOfDay.setHours(0, 0, 0, 0)
+
+  // Verify that the time is on the same day as props.date
+  if (time.toDateString() !== startOfDay.toDateString()) return -1
+
   const minutes = (time.getTime() - startOfDay.getTime()) / 1000 / 60
   return Math.round(minutes / ((24 * 60) / SAMPLES))
 }
@@ -393,6 +398,11 @@ watch(() => [props.latitude, props.longitude, props.date], updateChart, { immedi
  */
 onMounted(() => {
   updateChart()
+})
+
+// Expose timeToLabelIndex for testing purposes
+defineExpose({
+  timeToLabelIndex,
 })
 </script>
 
