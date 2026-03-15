@@ -14,7 +14,7 @@ describe('SunIcon.vue', () => {
     const wrapper = mount(SunIcon, {
       props: { name: 'sunrise' },
     })
-    // v-html rend le SVG, nous vérifions donc le contenu HTML du composant
+    // le composant dynamique rend le SVG, nous vérifions donc le contenu HTML du composant
     const html = wrapper.html()
     expect(html).toContain('<svg')
     expect(html).toContain('icon-tabler-sunrise')
@@ -51,9 +51,9 @@ describe('SunIcon.vue', () => {
     const wrapper = mount(SunIcon, {
       props: { name: 'invalid-icon-name' },
     })
-    // La propriété calculée retournera une chaîne vide, donc le v-html ne rendra rien
+    // La propriété calculée retournera null, donc le composant dynamique ne rendra rien (ou un commentaire)
     const div = wrapper.find('div')
-    expect(div.element.innerHTML).toBe('')
+    expect(div.element.innerHTML).toBe('<!--v-if-->')
   })
 
   it('applique les classes CSS de base au conteneur', () => {
