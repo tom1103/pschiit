@@ -17,6 +17,20 @@ import SunCalc from 'suncalc'
 import ModalComponent from './ModalComponent.vue'
 import { formatTime } from '@/utils/dateUtils'
 
+/**
+ * @description Formateur de temps réutilisable pour les étiquettes du graphique.
+ */
+const timeFormatter = new Intl.DateTimeFormat('fr-FR', {
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+/**
+ * @const {number}
+ * @description Valeur pré-calculée de PI/2.
+ */
+const PI_OVER_2 = Math.PI / 2
+
 // Enregistrement des composants et plugins Chart.js
 ChartJS.register(
   CategoryScale,
@@ -136,6 +150,12 @@ const largeChartOptions = ref({})
 const SAMPLES = 24 * 6
 
 /**
+ * @const {number}
+ * @description Intervalle en millisecondes entre chaque échantillon.
+ */
+const INTERVAL_MS = ((24 * 60) / SAMPLES) * 60 * 1000
+
+/**
  * @description Convertit un objet Date en index correspondant sur l'axe des labels du graphique.
  * @param {Date} time - L'heure à convertir.
  * @returns {number} L'index correspondant.
@@ -168,17 +188,21 @@ function updateChart() {
   const moonData = []
   const startOfDay = new Date(props.date)
   startOfDay.setHours(0, 0, 0, 0)
+  const startTime = startOfDay.getTime()
+
+  // On réutilise un objet Date unique pour limiter la pression sur le garbage collector
+  const dateObj = new Date(startTime)
 
   // Génération des données d'altitude pour le soleil et la lune
   for (let i = 0; i < SAMPLES; i++) {
-    const date = new Date(startOfDay.getTime() + i * ((24 * 60) / SAMPLES) * 60 * 1000)
-    labels.push(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    dateObj.setTime(startTime + i * INTERVAL_MS)
+    labels.push(timeFormatter.format(dateObj))
 
-    const sunPosition = SunCalc.getPosition(date, props.latitude, props.longitude)
-    sunData.push(sunPosition.altitude / (Math.PI / 2))
+    const sunPosition = SunCalc.getPosition(dateObj, props.latitude, props.longitude)
+    sunData.push(sunPosition.altitude / PI_OVER_2)
 
-    const moonPosition = SunCalc.getMoonPosition(date, props.latitude, props.longitude)
-    moonData.push(moonPosition.altitude / (Math.PI / 2))
+    const moonPosition = SunCalc.getMoonPosition(dateObj, props.latitude, props.longitude)
+    moonData.push(moonPosition.altitude / PI_OVER_2)
   }
 
   chartData.value.labels = labels
