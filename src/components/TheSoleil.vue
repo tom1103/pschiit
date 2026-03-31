@@ -1,36 +1,21 @@
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
 import { formatTime } from '@/utils/dateUtils'
+import { useGeolocation } from '@/composables/useGeolocation'
 
 // --- Géolocalisation et Date ---
 
-/**
- * @type {import('vue').Ref<number>}
- * @description Référence pour la latitude de l'utilisateur.
- */
-const latitude = ref(48.8566)
-
-/**
- * @type {import('vue').Ref<number>}
- * @description Référence pour la longitude de l'utilisateur.
- */
-const longitude = ref(2.3522)
+const { latitude, longitude, locationError, suivreLocalisation, geoLoc } = useGeolocation()
 
 /**
  * @type {import('vue').Ref<string>}
  * @description Référence pour la date sélectionnée, au format YYYY-MM-DD.
  */
 const date = ref(new Date().toISOString().slice(0, 10))
-
-/**
- * @type {import('vue').Ref<boolean>}
- * @description Indicateur pour savoir si la géolocalisation en temps réel est activée.
- */
-const suivreLocalisation = ref(false)
 
 /**
  * @type {import('vue').ComputedRef<Date>}
@@ -43,88 +28,6 @@ const sunCalcDate = computed(() => new Date(date.value))
  * @description Indicateur pour afficher ou masquer les contrôles de saisie manuelle.
  */
 const showManualControls = ref(false)
-
-/**
- * @type {import('vue').Ref<string>}
- * @description Message d'erreur pour la géolocalisation.
- */
-const locationError = ref('')
-
-/**
- * @type {number|null}
- * @description ID du watchPosition pour le suivi de la géolocalisation.
- */
-let watchId = null
-
-/**
- * @description Surveille les changements de la variable `suivreLocalisation` pour démarrer ou arrêter le suivi de la géolocalisation.
- */
-watch(suivreLocalisation, (newValue) => {
-  if (newValue) {
-    if (navigator.geolocation) {
-      locationError.value = ''
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          latitude.value = position.coords.latitude
-          longitude.value = position.coords.longitude
-        },
-        (error) => {
-          console.error('Erreur de géolocalisation:', error)
-        },
-      )
-    } else {
-      alert("La géolocalisation n'est pas supportée par ce navigateur.")
-      suivreLocalisation.value = false
-    }
-  } else if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId)
-    watchId = null
-  }
-})
-
-/**
- * @description Nettoie le watchPosition de géolocalisation lorsque le composant est démonté.
- */
-onUnmounted(() => {
-  if (watchId !== null && navigator.geolocation) {
-    navigator.geolocation.clearWatch(watchId)
-  }
-})
-
-/**
- * @description Récupère la position géographique actuelle de l'utilisateur.
- */
-function geoLoc() {
-  locationError.value = ''
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        latitude.value = position.coords.latitude
-        longitude.value = position.coords.longitude
-        locationError.value = ''
-      },
-      (error) => {
-        suivreLocalisation.value = false
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            locationError.value = "L'accès à la position a été refusé."
-            break
-          case error.POSITION_UNAVAILABLE:
-            locationError.value = 'Les informations de position sont indisponibles.'
-            break
-          case error.TIMEOUT:
-            locationError.value = 'La demande de position a expiré.'
-            break
-          default:
-            locationError.value = 'Une erreur inconnue est survenue.'
-            break
-        }
-      },
-    )
-  } else {
-    locationError.value = "La géolocalisation n'est pas supportée par ce navigateur."
-  }
-}
 
 // --- Calcul des heures du soleil ---
 
