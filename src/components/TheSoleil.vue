@@ -70,10 +70,25 @@ watch(suivreLocalisation, (newValue) => {
         },
         (error) => {
           console.error('Erreur de géolocalisation:', error)
+          suivreLocalisation.value = false
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              locationError.value = "L'accès à la position a été refusé."
+              break
+            case error.POSITION_UNAVAILABLE:
+              locationError.value = 'Les informations de position sont indisponibles.'
+              break
+            case error.TIMEOUT:
+              locationError.value = 'La demande de position a expiré.'
+              break
+            default:
+              locationError.value = 'Une erreur inconnue est survenue.'
+              break
+          }
         },
       )
     } else {
-      alert("La géolocalisation n'est pas supportée par ce navigateur.")
+      locationError.value = "La géolocalisation n'est pas supportée par ce navigateur."
       suivreLocalisation.value = false
     }
   } else if (watchId !== null) {
