@@ -78,6 +78,8 @@ describe('TheSoleil.vue Security Fix', () => {
 
     // Simulate error: PERMISSION_DENIED (1)
     errorCallback({ code: 1, PERMISSION_DENIED: 1 })
+    // Attend le rafraîchissement du DOM par Vue avant de vérifier le texte rendu.
+    await wrapper.vm.$nextTick()
 
     // Assert
     expect(wrapper.vm.locationError).toBe("L'accès à la position a été refusé.")
