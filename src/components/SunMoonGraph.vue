@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -416,13 +416,6 @@ const currentPosition = computed(() =>
  * @description Surveille les changements des props pour mettre à jour le graphique.
  */
 watch(() => [props.latitude, props.longitude, props.date], updateChart, { immediate: true })
-
-/**
- * @description Met à jour le graphique lors du montage initial du composant.
- */
-onMounted(() => {
-  updateChart()
-})
 
 // Expose timeToLabelIndex for testing purposes
 defineExpose({
