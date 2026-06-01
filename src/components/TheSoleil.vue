@@ -4,6 +4,8 @@ import * as SunCalc from 'suncalc'
 import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
+import MomentsPhoto from './MomentsPhoto.vue'
+import Visualisation3D from './Visualisation3D.vue'
 import { formatTime } from '@/utils/dateUtils'
 import { getMoonPhaseInfo, getDayLength, shiftDate } from '@/utils/sunUtils'
 
@@ -399,6 +401,10 @@ function goToToday() {
       </div>
     </div>
   </div>
+  <!-- Meilleurs moments pour la photographie (heures bleues et dorées) -->
+  <MomentsPhoto :times="times" />
+  <!-- Visualisation 3D temps réel Terre / Lune / Soleil (si WebGL supporté) -->
+  <Visualisation3D :latitude="latitude" :longitude="longitude" />
   <CarteLocalisation
     :latitude="latitude"
     :longitude="longitude"

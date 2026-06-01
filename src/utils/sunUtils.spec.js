@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { getMoonPhaseName, getMoonPhaseInfo, getDayLength, shiftDate } from './sunUtils'
+import SunCalc from 'suncalc'
+import {
+  getMoonPhaseName,
+  getMoonPhaseInfo,
+  getDayLength,
+  shiftDate,
+  getSubsolarPoint,
+  getPhotographyMoments,
+} from './sunUtils'
 
 describe('getMoonPhaseName', () => {
   it('retourne « Nouvelle lune » pour une phase de 0', () => {
@@ -107,5 +115,99 @@ describe('shiftDate', () => {
 
   it('retourne la valeur d\'entrée pour une date invalide', () => {
     expect(shiftDate('pas-une-date', 1)).toBe('pas-une-date')
+  })
+})
+
+describe('getSubsolarPoint', () => {
+  it('place le point subsolaire près du tropique du Cancer au solstice de juin', () => {
+    const { lat } = getSubsolarPoint(new Date('2025-06-21T12:00:00Z'))
+    // La déclinaison solaire culmine à environ +23.4° au solstice d'été.
+    expect(lat).toBeGreaterThan(23)
+    expect(lat).toBeLessThan(23.6)
+  })
+
+  it('place le point subsolaire près du tropique du Capricorne au solstice de décembre', () => {
+    const { lat } = getSubsolarPoint(new Date('2025-12-21T12:00:00Z'))
+    expect(lat).toBeLessThan(-23)
+    expect(lat).toBeGreaterThan(-23.6)
+  })
+
+  it('renvoie une latitude proche de zéro aux équinoxes', () => {
+    const { lat } = getSubsolarPoint(new Date('2025-03-20T12:00:00Z'))
+    expect(Math.abs(lat)).toBeLessThan(1)
+  })
+
+  it('fait dériver la longitude subsolaire d\'environ -15° par heure', () => {
+    const t0 = getSubsolarPoint(new Date('2025-06-21T12:00:00Z')).lon
+    const t1 = getSubsolarPoint(new Date('2025-06-21T13:00:00Z')).lon
+    // On gère le passage de -180/180 en comparant le plus petit écart angulaire.
+    let delta = t1 - t0
+    delta = ((((delta + 180) % 360) + 360) % 360) - 180
+    expect(delta).toBeGreaterThan(-15.5)
+    expect(delta).toBeLessThan(-14.5)
+  })
+
+  it('garde la longitude dans l\'intervalle ]-180, 180]', () => {
+    const { lon } = getSubsolarPoint(new Date('2025-08-15T03:27:00Z'))
+    expect(lon).toBeGreaterThan(-180)
+    expect(lon).toBeLessThanOrEqual(180)
+  })
+
+  it('renvoie des coordonnées neutres pour une date invalide', () => {
+    expect(getSubsolarPoint(new Date('invalid'))).toEqual({ lat: 0, lon: 0 })
+    expect(getSubsolarPoint(null)).toEqual({ lat: 0, lon: 0 })
+  })
+})
+
+describe('getPhotographyMoments', () => {
+  // Paris, un jour d'été : toutes les fenêtres existent.
+  const times = SunCalc.getTimes(new Date('2025-06-21T12:00:00'), 48.8566, 2.3522)
+
+  it('retourne les quatre créneaux (deux bleus, deux dorés)', () => {
+    const moments = getPhotographyMoments(times, times.solarNoon)
+    expect(moments).toHaveLength(4)
+    expect(moments.filter((m) => m.type === 'blue')).toHaveLength(2)
+    expect(moments.filter((m) => m.type === 'golden')).toHaveLength(2)
+  })
+
+  it('fournit des libellés horaires formatés', () => {
+    const moments = getPhotographyMoments(times, times.solarNoon)
+    moments.forEach((m) => {
+      expect(m.fromLabel).toMatch(/^\d{2}:\d{2}$/)
+      expect(m.toLabel).toMatch(/^\d{2}:\d{2}$/)
+    })
+  })
+
+  it('marque comme « past » un créneau du matin vu en milieu de journée', () => {
+    const moments = getPhotographyMoments(times, times.solarNoon)
+    const heureDoreeMatin = moments.find((m) => m.name === 'Heure dorée (matin)')
+    expect(heureDoreeMatin.status).toBe('past')
+  })
+
+  it('marque comme « upcoming » un créneau du soir vu en milieu de journée', () => {
+    const moments = getPhotographyMoments(times, times.solarNoon)
+    const heureDoreeSoir = moments.find((m) => m.name === 'Heure dorée (soir)')
+    expect(heureDoreeSoir.status).toBe('upcoming')
+  })
+
+  it('marque comme « active » un créneau contenant l\'instant de référence', () => {
+    // On se place au milieu de l'heure dorée du matin.
+    const milieu = new Date((times.sunrise.getTime() + times.goldenHourEnd.getTime()) / 2)
+    const moments = getPhotographyMoments(times, milieu)
+    const actif = moments.find((m) => m.status === 'active')
+    expect(actif).toBeDefined()
+    expect(actif.name).toBe('Heure dorée (matin)')
+  })
+
+  it('ignore les créneaux aux bornes invalides (région polaire)', () => {
+    const polaire = SunCalc.getTimes(new Date('2025-06-21T12:00:00'), 78, 15)
+    const moments = getPhotographyMoments(polaire, new Date('2025-06-21T12:00:00'))
+    // En été arctique le soleil ne se couche pas : certaines bornes sont invalides.
+    expect(moments.length).toBeLessThan(4)
+  })
+
+  it('retourne un tableau vide pour une entrée invalide', () => {
+    expect(getPhotographyMoments(null)).toEqual([])
+    expect(getPhotographyMoments(undefined)).toEqual([])
   })
 })

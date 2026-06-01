@@ -29,6 +29,8 @@ describe('TheSoleil.vue Security Fix', () => {
         stubs: {
           SunMoonGraph: true,
           CarteLocalisation: true,
+          MomentsPhoto: true,
+          Visualisation3D: true,
         },
       },
     })
@@ -68,6 +70,8 @@ describe('TheSoleil.vue Security Fix', () => {
         stubs: {
           SunMoonGraph: true,
           CarteLocalisation: true,
+          MomentsPhoto: true,
+          Visualisation3D: true,
         },
       },
     })

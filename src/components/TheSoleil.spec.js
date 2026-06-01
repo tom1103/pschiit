@@ -28,6 +28,8 @@ describe('TheSoleil.vue', () => {
         stubs: {
           SunMoonGraph: true, // Empêche le rendu du composant enfant
           CarteLocalisation: true, // Empêche le rendu du composant enfant
+          MomentsPhoto: true, // Empêche le rendu du composant enfant
+          Visualisation3D: true, // Empêche le rendu du composant enfant
         },
       },
     })
