@@ -5,6 +5,7 @@ import SunIcon from './SunIcon.vue'
 import CarteLocalisation from './CarteLocalisation.vue'
 import SunMoonGraph from './SunMoonGraph.vue'
 import { formatTime } from '@/utils/dateUtils'
+import { getMoonPhaseInfo, getDayLength, shiftDate } from '@/utils/sunUtils'
 
 // --- Géolocalisation et Date ---
 
@@ -178,6 +179,37 @@ const sunEvents = computed(() => {
     ],
   }
 })
+
+// --- Durée du jour et phase de la lune ---
+
+/**
+ * @type {import('vue').ComputedRef<{minutes: number, label: string}>}
+ * @description Propriété calculée qui retourne la durée du jour (entre lever et coucher du soleil).
+ */
+const dayLength = computed(() => getDayLength(times.value))
+
+/**
+ * @type {import('vue').ComputedRef<{name: string, illumination: number, phase: number}>}
+ * @description Propriété calculée qui retourne les informations de la phase lunaire pour la date sélectionnée.
+ */
+const moonPhase = computed(() => getMoonPhaseInfo(sunCalcDate.value))
+
+// --- Navigation par date ---
+
+/**
+ * @description Décale la date sélectionnée d'un nombre de jours donné (négatif pour reculer).
+ * @param {number} offset - Nombre de jours à ajouter à la date courante.
+ */
+function changeDay(offset) {
+  date.value = shiftDate(date.value, offset)
+}
+
+/**
+ * @description Réinitialise la date sélectionnée sur la journée d'aujourd'hui.
+ */
+function goToToday() {
+  date.value = new Date().toISOString().slice(0, 10)
+}
 </script>
 
 <template>
@@ -187,6 +219,17 @@ const sunEvents = computed(() => {
         <SunMoonGraph :latitude="latitude" :longitude="longitude" :date="sunCalcDate" />
         <div class="flex-grow text-center">
           <h1 class="text-2xl font-bold text-gray-800">Éphémérides du Soleil</h1>
+          <!-- Résumé : durée du jour et phase de la lune pour la date sélectionnée -->
+          <div class="mt-1 flex flex-wrap justify-center gap-x-4 text-sm text-gray-600">
+            <span v-if="dayLength.label" class="flex items-center">
+              <span class="mr-1">☀️</span>
+              <span>Durée du jour : {{ dayLength.label }}</span>
+            </span>
+            <span v-if="moonPhase.name" class="flex items-center">
+              <span class="mr-1">🌙</span>
+              <span>{{ moonPhase.name }} ({{ moonPhase.illumination }}%)</span>
+            </span>
+          </div>
         </div>
         <div class="flex-shrink-0">
           <button
@@ -249,6 +292,29 @@ const sunEvents = computed(() => {
             v-model="date"
             class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+        <!-- Navigation rapide entre les jours (précédent / aujourd'hui / suivant) -->
+        <div class="flex items-end gap-2 md:col-span-3">
+          <button
+            @click="changeDay(-1)"
+            aria-label="Jour précédent"
+            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition duration-300"
+          >
+            ← Jour précédent
+          </button>
+          <button
+            @click="goToToday"
+            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition duration-300"
+          >
+            Aujourd'hui
+          </button>
+          <button
+            @click="changeDay(1)"
+            aria-label="Jour suivant"
+            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition duration-300"
+          >
+            Jour suivant →
+          </button>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

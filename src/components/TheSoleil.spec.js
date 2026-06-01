@@ -52,4 +52,25 @@ describe('TheSoleil.vue', () => {
     await wrapper.find('button.bg-blue-500').trigger('click')
     expect(wrapper.vm.latitude).toBe(51.5074)
   })
+
+  it('affiche la durée du jour et la phase de la lune', () => {
+    // Les libellés calculés doivent être présents dans le rendu.
+    expect(wrapper.text()).toContain('Durée du jour')
+    expect(wrapper.vm.dayLength.label).toMatch(/\d+h \d{2}min/)
+    expect(wrapper.vm.moonPhase.name.length).toBeGreaterThan(0)
+  })
+
+  it('avance et recule la date via la navigation par jour', () => {
+    wrapper.vm.date = '2025-06-15'
+    wrapper.vm.changeDay(1)
+    expect(wrapper.vm.date).toBe('2025-06-16')
+    wrapper.vm.changeDay(-1)
+    expect(wrapper.vm.date).toBe('2025-06-15')
+  })
+
+  it("réinitialise la date sur aujourd'hui", () => {
+    wrapper.vm.date = '2000-01-01'
+    wrapper.vm.goToToday()
+    expect(wrapper.vm.date).toBe(new Date().toISOString().slice(0, 10))
+  })
 })
